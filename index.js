@@ -1,1 +1,2 @@
-console.log("hello");
+// file: index.js
+console.log("Hello, Node.js!");
