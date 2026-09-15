@@ -1,0 +1,53 @@
+name: YouTube yt-dlp Basic Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install yt-dlp
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -U yt-dlp
+          yt-dlp --version
+
+      - name: Test YouTube
+        run: |
+          yt-dlp \
+            --no-playlist \
+            --no-warnings \
+            --dump-single-json \
+            "https://www.youtube.com/watch?v=7VsejGzcJmM" \
+            > result.json
+
+      - name: Show result
+        if: always()
+        run: |
+          if [ -s result.json ]; then
+            python - <<'PY'
+          import json
+          with open("result.json", encoding="utf-8") as f:
+              data = json.load(f)
+
+          print("STATUS: SUCCESS")
+          print("Title:", data.get("title"))
+          print("Video ID:", data.get("id"))
+          print("Extractor:", data.get("extractor"))
+          print("Duration:", data.get("duration"))
+          PY
+          else
+            echo "STATUS: FAILED"
+            echo "yt-dlp could not retrieve the video."
+            exit 1
+          fi
